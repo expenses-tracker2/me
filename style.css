@@ -286,3 +286,90 @@ button.secondary {
     font-size: 14px;
 
 }
+
+/* -----------------------------
+   CHARTS - PHONE FRIENDLY
+----------------------------- */
+
+.chart-section {
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.chart-section h2 {
+    margin-bottom: 10px;
+}
+
+
+/* PIE CHART */
+
+.pie-chart-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin: 0 auto 10px;
+}
+
+
+/* BAR CHART */
+
+.bar-chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    margin: 0 auto 15px;
+}
+
+
+/* PHONE SCREEN */
+
+@media (max-width: 600px) {
+
+    .pie-chart-container {
+        height: 340px;
+    }
+
+    .bar-chart-container {
+        height: 310px;
+    }
+
+    .chart-section h2 {
+        font-size: 19px;
+    }
+
+}
+
+/* -----------------------------
+   PREVIOUS MONTHS - CLEAN CARD
+----------------------------- */
+
+#previousMonths {
+    margin-top: 4px;
+}
+
+.previous-month-select {
+    width: 100%;
+    min-height: 46px;
+
+    padding: 10px 12px;
+    margin-bottom: 12px;
+
+    border: 1px solid #d5dbe3;
+    border-radius: 10px;
+
+    background: #fff;
+    color: #222;
+
+    font-size: 16px;
+}
+
+.previous-month-amount {
+    padding: 12px 4px 4px;
+
+    border-top: 1px solid #edf0f4;
+
+    color: #222;
+    font-size: 17px;
+    font-weight: 700;
+}
+
