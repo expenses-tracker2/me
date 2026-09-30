@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#4d96ff">
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+
+    <title>Expense Tracker</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<main class="app">
+
+    <!-- LOGIN SCREEN -->
+    <section id="loginScreen" class="card">
+
+        <h1>💰 Expense Tracker</h1>
+
+        <p class="muted">
+            Login to continue
+        </p>
+
+        <input
+            id="email"
+            type="email"
+            placeholder="Email"
+            autocomplete="email"
+        >
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
+
+        <button id="loginBtn">
+            Login
+        </button>
+
+        <button id="signupBtn" class="secondary">Create Account</button>
+
+        <p id="loginMessage" class="message"></p>
+
+    
+    </section>
+
+
+    <!-- MAIN APP -->
+    <section id="appScreen" class="hidden">
+    
+     <p id="welcomeMessage" class="welcome-message">Welcome! 👋</p>
+
+        <header class="topbar">
+
+            <div>
+                <h1>💰 Expense Tracker</h1>
+
+                <p id="userEmail" class="muted"></p>
+            </div>
+
+            <button id="logoutBtn" class="secondary">
+                Logout
+            </button>
+
+        </header>
+
+<!-- CURRENT MONTH -->
+<section class="card">
+
+    <div class="section-title">
+
+        <h2 id="monthTitle">
+            This Month
+        </h2>
+
+    </div>
+
+</section>
+
+        <!-- ADD EXPENSE -->
+        <section class="card">
+
+            <h2>Add Expense</h2>
+
+            <select id="category">
+
+                <option>🍔 Food & Snacks</option>
+
+                <option>🚌 Travelling</option>
+
+                <option>🛍️ Shopping</option>
+
+                <option>🎬 Entertainment</option>
+
+                <option>💊 Health & Medicine</option>
+
+                <option>📦 Other</option>
+
+            </select>
+
+
+            <input
+                id="amount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="Amount (₹)"
+            >
+
+
+            <button id="addBtn">
+                Add Expense
+            </button>
+
+
+            <p id="appMessage" class="message"></p>
+
+        </section>
+
+
+
+
+
+<!-- YOUR EXPENSES -->
+<section class="card">
+
+    <h2>📊 Your Expenses</h2>
+
+    <div id="expenses"></div>
+
+</section>
+
+
+<!-- EDIT CATEGORY AMOUNT -->
+<section class="card">
+
+    <h2>
+        ✏️ Edit Category Amount
+    </h2>
+
+    <label for="editCategory">
+        Choose Category
+    </label>
+
+    <select id="editCategory">
+
+        <option>🍔 Food & Snacks</option>
+        <option>🚌 Travelling</option>
+        <option>🛍️ Shopping</option>
+        <option>🎬 Entertainment</option>
+        <option>💊 Health & Medicine</option>
+        <option>📦 Other</option>
+
+    </select>
+
+    <p id="currentAmount">
+        Current amount: ₹0
+    </p>
+
+    <label for="newAmount">
+        New Amount (₹)
+    </label>
+
+    <div class="amount-control">
+
+        <button
+            type="button"
+            id="minusBtn"
+            class="secondary"
+        >
+            −
+        </button>
+
+        <input
+            id="newAmount"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+        >
+
+        <button
+            type="button"
+            id="plusBtn"
+            class="secondary"
+        >
+            +
+        </button>
+
+    </div>
+
+    <button id="saveAmountBtn">
+        💾 SAVE NEW AMOUNT
+    </button>
+
+    <p id="editMessage" class="message"></p>
+
+    <button
+        id="toggleTotalBtn"
+        class="secondary"
+    >
+        👁️ Show / Hide Total Spent
+    </button>
+
+    <div class="total-card">
+
+        <div>
+            🔒 TOTAL SPENT
+        </div>
+
+        <strong id="total">
+            •••••
+        </strong>
+
+    </div>
+    
+    <!-- SPENDING BY CATEGORY -->
+    <section class="card">
+
+    <h2>🥧 Spending by Category</h2>
+
+    <div style="position: relative; height: 390px;">
+        <canvas id="pieChart"></canvas>
+    </div>
+
+   </section>
+
+   <!-- CATEGORY COMPARISON -->
+    <section class="card">
+
+        <h2>📊 Category Comparison</h2>
+
+        <div style="position: relative; height: 300px;">
+            <canvas id="barChart"></canvas>
+        </div>
+
+    </section>
+
+    <!-- PREVIOUS MONTHS -->
+    <section class="card">
+      <h2>📅 Previous Months</h2>
+      <div id="previousMonths">
+        <p class="empty">No previous month data.</p>
+    </div>
+   </section>
+
+</section>
+
+<div class="instagram-footer">
+    <i class="fa-brands fa-instagram instagram-icon"></i>
+    <span>vaibhav3593ff</span>
+</div>
+
+</main>
+
+
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script src="config.js"></script>
+
+<script src="app.js"></script>
+
+
+<!-- PWA -->
+<script>
+
+if ("serviceWorker" in navigator) {
+
+    navigator.serviceWorker
+        .register("service-worker.js")
+        .catch(() => {});
+
+}
+
+</script>
+
+</body>
+</html>
