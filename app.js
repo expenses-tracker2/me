@@ -215,35 +215,43 @@ function updateTotalDisplay() {
 }
 
 // -----------------------------
-// PIE CHART
+// CHARTS
 // -----------------------------
 
 let pieChart = null;
+let barChart = null;
+
+
+// -----------------------------
+// PIE CHART
+// -----------------------------
 
 function updatePieChart() {
 
     const canvas = document.getElementById("pieChart");
 
-    if (!canvas) {
-        return;
-    }
+    if (!canvas) return;
 
-    const labels = CATEGORIES.map(category =>
-        category.replace(/^[^\w\s]+\s/, "")
-    );
+    const labels = [
+        "Food & Snacks",
+        "Travelling",
+        "Shopping",
+        "Entertainment",
+        "Health & Medicine",
+        "Other"
+    ];
 
     const values = CATEGORIES.map(category =>
-        currentCategoryTotals[category] || 0
+        Number(currentCategoryTotals[category] || 0)
     );
 
-    // Same category colours as the Streamlit-style chart
     const categoryColors = [
-        "#1f77b4", // Food & Snacks - Blue
-        "#ff7f0e", // Travelling - Orange
-        "#46c946", // Shopping - Green
-        "#d62728", // Entertainment - Red
-        "#e4e279", // Health & Medicine - Purple
-        "#9153a8"  // Other
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#e4e279",
+        "#9467bd"
     ];
 
     if (pieChart) {
@@ -261,7 +269,7 @@ function updatePieChart() {
                 data: values,
                 backgroundColor: categoryColors,
                 borderColor: "#ffffff",
-                borderWidth: 3
+                borderWidth: 2
             }]
         },
 
@@ -271,7 +279,7 @@ function updatePieChart() {
             maintainAspectRatio: false,
 
             layout: {
-                padding: 8
+                padding: 0
             },
 
             plugins: {
@@ -280,11 +288,12 @@ function updatePieChart() {
                     position: "bottom",
 
                     labels: {
-                        boxWidth: 32,
-                        boxHeight: 12,
-                        padding: 12,
+                        boxWidth: 14,
+                        boxHeight: 14,
+                        padding: 5,
+
                         font: {
-                            size: 15
+                            size: 10
                         }
                     }
                 },
@@ -295,24 +304,35 @@ function updatePieChart() {
 
                     font: {
                         weight: "bold",
-                        size: 16
+                        size: 11
                     },
 
-                    formatter: (value, context) => {
+                    formatter: function(value, context) {
 
-                        if (value === 0) {
+                        if (value <= 0) {
                             return "";
                         }
 
+                        const data =
+                            context.chart.data.datasets[0].data;
+
                         const total =
-                            context.chart.data.datasets[0].data
-                                .reduce((sum, number) => sum + number, 0);
+                            data.reduce(
+                                (sum, number) =>
+                                    sum + number,
+                                0
+                            );
 
                         if (total === 0) {
                             return "";
                         }
 
-                        return Math.round((value / total) * 100) + "%";
+                        const percentage =
+                            (value / total) * 100;
+
+                        return percentage >= 5
+                            ? Math.round(percentage) + "%"
+                            : "";
                     }
                 }
             }
@@ -322,38 +342,36 @@ function updatePieChart() {
     });
 }
 
-// bar CHART
-
-let barChart = null;
+// -----------------------------
+// BAR CHART
+// -----------------------------
 
 function updateBarChart() {
 
     const canvas = document.getElementById("barChart");
 
-    if (!canvas) {
-        return;
-    }
+    if (!canvas) return;
 
     const labels = [
-        ["Food", "& Snacks"],
+        ["Food &", "Snacks"],
         ["Travelling"],
         ["Shopping"],
         ["Entertainment"],
-        ["Health", "& Medicine"],
+        ["Health &", "Medicine"],
         ["Other"]
     ];
 
     const values = CATEGORIES.map(category =>
-        currentCategoryTotals[category] || 0
+        Number(currentCategoryTotals[category] || 0)
     );
 
     const categoryColors = [
-        "#1f77b4", // Food & Snacks - Blue
-        "#ff7f0e", // Travelling - Orange
-        "#7bc96f", // Shopping - Light Green
-        "#d62728", // Entertainment - Red
-        "#8c564b", // Health & Medicine - Brown
-        "#9467bd"  // Other - Purple
+        "#1f77b4",
+        "#ff7f0e",
+        "#2ca02c",
+        "#d62728",
+        "#e4e279",
+        "#9467bd"
     ];
 
     if (barChart) {
@@ -365,46 +383,104 @@ function updateBarChart() {
         type: "bar",
 
         data: {
+
             labels: labels,
 
             datasets: [{
+
                 label: "Amount Spent",
+
                 data: values,
+
                 backgroundColor: categoryColors,
-                borderRadius: 8
+
+                borderRadius: 6,
+
+                borderSkipped: false,
+
+                barPercentage: 0.65,
+
+                categoryPercentage: 0.8
             }]
         },
 
         options: {
 
             responsive: true,
+
             maintainAspectRatio: false,
 
+            layout: {
+                padding: {
+                    top: 20,
+                    left: 2,
+                    right: 2,
+                    bottom: 8
+                }
+            },
+
             plugins: {
+
                 legend: {
                     display: false
+                },
+
+                datalabels: {
+
+                    anchor: "end",
+
+                    align: "top",
+
+                    offset: 2,
+
+                    color: "#111",
+
+                    font: {
+                        weight: "bold",
+                        size: 10
+                    },
+
+                    formatter: function(value) {
+
+                        return value > 0
+                            ? "₹" + Math.round(value)
+                            : "";
+                    }
                 }
             },
 
             scales: {
+
                 y: {
+
                     beginAtZero: true,
 
                     ticks: {
+                        font: {
+                            size: 9
+                        },
+
                         callback: function(value) {
                             return "₹" + value;
                         }
                     }
                 },
+
                 x: {
                     display: false
                 }
             }
-        }
+        },
+
+        plugins: [ChartDataLabels]
     });
 }
 
-//previous months data
+
+// -----------------------------
+// PREVIOUS MONTHS DROPDOWN
+// -----------------------------
+
 async function loadPreviousMonths(user) {
 
     const previousMonthsElement =
@@ -418,20 +494,24 @@ async function loadPreviousMonths(user) {
 
     const { data, error } = await db
         .from("expenses")
-        .select("month_key, category, amount")
+        .select("month_key, amount")
         .eq("user_id", user.id)
         .lt("month_key", currentMonthKey)
         .order("month_key", { ascending: false });
 
     if (error) {
+
         previousMonthsElement.innerHTML =
             `<p class="empty">Could not load previous months.</p>`;
+
         return;
     }
 
     if (!data || data.length === 0) {
+
         previousMonthsElement.innerHTML =
             `<p class="empty">No previous month data.</p>`;
+
         return;
     }
 
@@ -443,16 +523,26 @@ async function loadPreviousMonths(user) {
             months[row.month_key] = 0;
         }
 
-        months[row.month_key] += Number(row.amount) || 0;
+        months[row.month_key] +=
+            Number(row.amount) || 0;
+
     });
 
     const monthKeys = Object.keys(months)
         .sort((a, b) => b.localeCompare(a))
         .slice(0, 12);
 
-    previousMonthsElement.innerHTML = monthKeys.map(monthKey => {
 
-        const [year, month] = monthKey.split("-");
+    // -----------------------------
+    // DROPDOWN
+    // -----------------------------
+
+    let options = "";
+
+    monthKeys.forEach((monthKey, index) => {
+
+        const [year, month] =
+            monthKey.split("-");
 
         const date = new Date(
             Number(year),
@@ -460,21 +550,77 @@ async function loadPreviousMonths(user) {
             1
         );
 
-        const monthName = date.toLocaleString("en-IN", {
-            month: "long",
-            year: "numeric"
-        });
+        const monthName =
+            date.toLocaleString("en-IN", {
+                month: "long",
+                year: "numeric"
+            });
 
-        return `
-            <div class="expense-row">
-                <span>${monthName}</span>
-                <span class="amount">
-                    ₹${months[monthKey].toFixed(2)}
-                </span>
-            </div>
+        options += `
+            <option value="${monthKey}">
+                ${monthName}
+            </option>
         `;
 
-    }).join("");
+    });
+
+
+    const firstMonth = monthKeys[0];
+
+    const firstAmount =
+        months[firstMonth] || 0;
+
+
+    previousMonthsElement.innerHTML = `
+
+        <select
+            id="previousMonthSelect"
+            class="previous-month-select"
+        >
+            ${options}
+        </select>
+
+        <div
+            id="previousMonthAmount"
+            class="previous-month-amount"
+        >
+            ₹${firstAmount.toFixed(2)}
+        </div>
+
+    `;
+
+
+    // -----------------------------
+    // CHANGE MONTH
+    // -----------------------------
+
+    const select =
+        document.getElementById(
+            "previousMonthSelect"
+        );
+
+    const amountElement =
+        document.getElementById(
+            "previousMonthAmount"
+        );
+
+
+    select.addEventListener(
+        "change",
+        function () {
+
+            const selectedMonth =
+                select.value;
+
+            const amount =
+                months[selectedMonth] || 0;
+
+            amountElement.textContent =
+                `₹${amount.toFixed(2)}`;
+
+        }
+    );
+
 }
 
 //only saved 12 months data
