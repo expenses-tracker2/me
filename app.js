@@ -476,7 +476,6 @@ function updateBarChart() {
     });
 }
 
-
 // -----------------------------
 // PREVIOUS MONTHS DROPDOWN
 // -----------------------------
@@ -494,24 +493,20 @@ async function loadPreviousMonths(user) {
 
     const { data, error } = await db
         .from("expenses")
-        .select("month_key, amount")
+        .select("month_key, category, amount")
         .eq("user_id", user.id)
         .lt("month_key", currentMonthKey)
         .order("month_key", { ascending: false });
 
     if (error) {
-
         previousMonthsElement.innerHTML =
             `<p class="empty">Could not load previous months.</p>`;
-
         return;
     }
 
     if (!data || data.length === 0) {
-
         previousMonthsElement.innerHTML =
             `<p class="empty">No previous month data.</p>`;
-
         return;
     }
 
@@ -520,11 +515,22 @@ async function loadPreviousMonths(user) {
     data.forEach(row => {
 
         if (!months[row.month_key]) {
-            months[row.month_key] = 0;
+            months[row.month_key] = {
+                total: 0,
+                categories: {}
+            };
         }
 
-        months[row.month_key] +=
+        const amount =
             Number(row.amount) || 0;
+
+        months[row.month_key].total += amount;
+
+        if (!months[row.month_key].categories[row.category]) {
+            months[row.month_key].categories[row.category] = 0;
+        }
+
+        months[row.month_key].categories[row.category] += amount;
 
     });
 
@@ -533,13 +539,7 @@ async function loadPreviousMonths(user) {
         .slice(0, 12);
 
 
-    // -----------------------------
-    // DROPDOWN
-    // -----------------------------
-
-    let options = "";
-
-    monthKeys.forEach((monthKey, index) => {
+    function getMonthDisplay(monthKey) {
 
         const [year, month] =
             monthKey.split("-");
@@ -550,25 +550,32 @@ async function loadPreviousMonths(user) {
             1
         );
 
-        const monthName =
-            date.toLocaleString("en-IN", {
-                month: "long",
-                year: "numeric"
-            });
-
-        options += `
-            <option value="${monthKey}">
-                ${monthName}
-            </option>
-        `;
-
-    });
+        return date.toLocaleString("en-IN", {
+            month: "long",
+            year: "numeric"
+        });
+    }
 
 
-    const firstMonth = monthKeys[0];
+    function getCategoryHTML(monthKey) {
 
-    const firstAmount =
-        months[firstMonth] || 0;
+        const categoryData =
+            months[monthKey].categories;
+
+        return CATEGORIES
+            .filter(category =>
+                (categoryData[category] || 0) > 0
+            )
+            .map(category => `
+                <div class="previous-month-category">
+                    <span>${category}</span>
+                    <span>
+                        ₹${categoryData[category].toFixed(2)}
+                    </span>
+                </div>
+            `)
+            .join("");
+    }
 
 
     previousMonthsElement.innerHTML = `
@@ -577,22 +584,33 @@ async function loadPreviousMonths(user) {
             id="previousMonthSelect"
             class="previous-month-select"
         >
-            ${options}
+
+            ${monthKeys.map(monthKey => `
+                <option value="${monthKey}">
+                    ${getMonthDisplay(monthKey)}
+                </option>
+            `).join("")}
+
         </select>
+
 
         <div
             id="previousMonthAmount"
             class="previous-month-amount"
         >
-            ₹${firstAmount.toFixed(2)}
+            ₹${months[monthKeys[0]].total.toFixed(2)}
+        </div>
+
+
+        <div
+            id="previousMonthCategories"
+            class="previous-month-categories"
+        >
+            ${getCategoryHTML(monthKeys[0])}
         </div>
 
     `;
 
-
-    // -----------------------------
-    // CHANGE MONTH
-    // -----------------------------
 
     const select =
         document.getElementById(
@@ -604,6 +622,11 @@ async function loadPreviousMonths(user) {
             "previousMonthAmount"
         );
 
+    const categoriesElement =
+        document.getElementById(
+            "previousMonthCategories"
+        );
+
 
     select.addEventListener(
         "change",
@@ -612,18 +635,19 @@ async function loadPreviousMonths(user) {
             const selectedMonth =
                 select.value;
 
-            const amount =
-                months[selectedMonth] || 0;
-
             amountElement.textContent =
-                `₹${amount.toFixed(2)}`;
+                `₹${months[selectedMonth].total.toFixed(2)}`;
+
+            categoriesElement.innerHTML =
+                getCategoryHTML(selectedMonth);
 
         }
     );
 
 }
 
-//only saved 12 months data
+// Saved 12 months data
+
 async function cleanupOldExpenses(user) {
 
     if (!user) {
