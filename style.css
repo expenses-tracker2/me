@@ -373,3 +373,18 @@ button.secondary {
     font-weight: 700;
 }
 
+.previous-month-categories {
+    margin-top: 8px;
+}
+
+.previous-month-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 3px 4px;
+
+    color: #777;
+    font-size: 10px;
+    font-weight: 500;
+}
