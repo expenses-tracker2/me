@@ -95,7 +95,7 @@ const CATEGORIES = [
     "🍔 Food & Snacks",
     "🚌 Travelling",
     "🛍️ Shopping",
-    "🎬 Entertainment",
+    "🎉 Fun & Entertainment",
     "💊 Health & Medicine",
     "📦 Other"
 ];
@@ -236,7 +236,7 @@ function updatePieChart() {
         "Food & Snacks",
         "Travelling",
         "Shopping",
-        "Entertainment",
+        "Fun & Entertainment",
         "Health & Medicine",
         "Other"
     ];
@@ -353,10 +353,10 @@ function updateBarChart() {
     if (!canvas) return;
 
     const labels = [
-        ["Food &", "Snacks"],
+        ["Food & Snacks"],
         ["Travelling"],
         ["Shopping"],
-        ["Entertainment"],
+        ["Fun & Entertainment"],
         ["Health &", "Medicine"],
         ["Other"]
     ];
