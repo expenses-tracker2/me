@@ -177,8 +177,13 @@ function updateBudgetDisplay() {
     }
 
     if (budgetRemainingElement) {
-        budgetRemainingElement.textContent =
-            formatRupees(currentMonthlyBudget - currentTotal);
+        if (currentMonthlyBudget <= 0) {
+            budgetRemainingElement.textContent =
+                "Budget not set";
+        } else {
+            budgetRemainingElement.textContent =
+                formatRupees(currentMonthlyBudget - currentTotal);
+        }
     }
 }
 
@@ -262,10 +267,16 @@ async function saveMonthlyBudget() {
 
     await loadPreviousMonths(user);
 
-    appMessage.textContent =
-        "Monthly budget saved successfully! 💰";
+    budgetMessage.textContent =
+    "Monthly budget saved successfully! 💰";
 
-    appMessage.className = "message success-message";
+    budgetMessage.className = "message success-message";
+
+    setTimeout(() => {
+    budgetMessage.textContent = "";
+    budgetMessage.className = "message";
+    }, 4000);
+    
 }
 
 // -----------------------------
