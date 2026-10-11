@@ -54,6 +54,18 @@ const expensesElement =
 const monthTitle =
     document.getElementById("monthTitle");
 
+// MONTHLY BUDGET ELEMENTS
+const monthlyBudgetInput =
+    document.getElementById("monthlyBudgetInput");
+
+const saveBudgetBtn =
+    document.getElementById("saveBudgetBtn");
+
+const budgetAmountElement =
+    document.getElementById("budgetAmount");
+
+const budgetRemainingElement =
+    document.getElementById("budgetRemaining");
 
 // EDIT CATEGORY ELEMENTS
 
@@ -144,6 +156,117 @@ function getMonthName() {
 
 }
 
+// -----------------------------
+// MONTHLY BUDGET
+// -----------------------------
+
+let currentMonthlyBudget = 0;
+
+function formatRupees(value) {
+    const amount = Number(value) || 0;
+
+    return amount < 0
+        ? `−₹${Math.abs(amount).toFixed(2)}`
+        : `₹${amount.toFixed(2)}`;
+}
+
+function updateBudgetDisplay() {
+    if (budgetAmountElement) {
+        budgetAmountElement.textContent =
+            formatRupees(currentMonthlyBudget);
+    }
+
+    if (budgetRemainingElement) {
+        budgetRemainingElement.textContent =
+            formatRupees(currentMonthlyBudget - currentTotal);
+    }
+}
+
+async function loadMonthlyBudget(user) {
+    if (!user) return;
+
+    const { data, error } = await db
+        .from("monthly_budgets")
+        .select("amount")
+        .eq("user_id", user.id)
+        .eq("month_key", getMonthKey())
+        .maybeSingle();
+
+    if (error) {
+        appMessage.textContent =
+            "Could not load budget: " + error.message;
+        return;
+    }
+
+    currentMonthlyBudget = Number(data?.amount) || 0;
+
+    if (monthlyBudgetInput) {
+    monthlyBudgetInput.value = "";
+    }
+
+    updateBudgetDisplay();
+}
+
+async function saveMonthlyBudget() {
+    const inputValue = monthlyBudgetInput?.value.trim();
+    const amount = Number(inputValue);
+
+    if (
+        inputValue === undefined ||
+        inputValue === "" ||
+        !Number.isFinite(amount) ||
+        amount < 0
+    ) {
+        appMessage.textContent =
+            "Enter a valid budget amount (0 or more).";
+        return;
+    }
+
+    const {
+        data: { user },
+        error: userError
+    } = await db.auth.getUser();
+
+    if (userError || !user) {
+        showLogin("Please log in again.");
+        return;
+    }
+
+    saveBudgetBtn.disabled = true;
+
+    const { error } = await db
+        .from("monthly_budgets")
+        .upsert({
+            user_id: user.id,
+            month_key: getMonthKey(),
+            amount: currentMonthlyBudget + amount
+        }, {
+            onConflict: "user_id,month_key"
+        });
+
+    saveBudgetBtn.disabled = false;
+
+    if (error) {
+        appMessage.textContent =
+            "Could not save budget: " + error.message;
+        return;
+    }
+
+    currentMonthlyBudget = currentMonthlyBudget + amount;
+
+    if (monthlyBudgetInput) {
+    monthlyBudgetInput.value = "";
+    }
+
+    updateBudgetDisplay();
+
+    await loadPreviousMonths(user);
+
+    appMessage.textContent =
+        "Monthly budget saved successfully! 💰";
+
+    appMessage.className = "message success-message";
+}
 
 // -----------------------------
 // LOGIN SCREEN
@@ -476,96 +599,108 @@ function updateBarChart() {
     });
 }
 
+
 // -----------------------------
 // PREVIOUS MONTHS DROPDOWN
 // -----------------------------
 
 async function loadPreviousMonths(user) {
-
     const previousMonthsElement =
         document.getElementById("previousMonths");
 
-    if (!previousMonthsElement || !user) {
-        return;
-    }
+    if (!previousMonthsElement || !user) return;
 
     const currentMonthKey = getMonthKey();
 
-    const { data, error } = await db
-        .from("expenses")
-        .select("month_key, category, amount")
-        .eq("user_id", user.id)
-        .lt("month_key", currentMonthKey)
-        .order("month_key", { ascending: false });
+    const [
+        { data: expenseData, error: expenseError },
+        { data: budgetData, error: budgetError }
+    ] = await Promise.all([
+        db
+            .from("expenses")
+            .select("month_key, category, amount")
+            .eq("user_id", user.id)
+            .lt("month_key", currentMonthKey)
+            .order("month_key", { ascending: false }),
 
-    if (error) {
+        db
+            .from("monthly_budgets")
+            .select("month_key, amount")
+            .eq("user_id", user.id)
+            .lt("month_key", currentMonthKey)
+            .order("month_key", { ascending: false })
+    ]);
+
+    if (expenseError || budgetError) {
         previousMonthsElement.innerHTML =
             `<p class="empty">Could not load previous months.</p>`;
         return;
     }
 
-    if (!data || data.length === 0) {
-        previousMonthsElement.innerHTML =
-            `<p class="empty">No previous month data.</p>`;
-        return;
-    }
-
     const months = {};
 
-    data.forEach(row => {
-
+    (expenseData || []).forEach(row => {
         if (!months[row.month_key]) {
             months[row.month_key] = {
                 total: 0,
-                categories: {}
+                categories: {},
+                budget: null
             };
         }
 
-        const amount =
-            Number(row.amount) || 0;
+        const amount = Number(row.amount) || 0;
+        const month = months[row.month_key];
 
-        months[row.month_key].total += amount;
+        month.total += amount;
 
-        if (!months[row.month_key].categories[row.category]) {
-            months[row.month_key].categories[row.category] = 0;
+        if (!month.categories[row.category]) {
+            month.categories[row.category] = 0;
         }
 
-        months[row.month_key].categories[row.category] += amount;
+        month.categories[row.category] += amount;
+    });
 
+    (budgetData || []).forEach(row => {
+        if (!months[row.month_key]) {
+            months[row.month_key] = {
+                total: 0,
+                categories: {},
+                budget: null
+            };
+        }
+
+        months[row.month_key].budget =
+            Number(row.amount) || 0;
     });
 
     const monthKeys = Object.keys(months)
         .sort((a, b) => b.localeCompare(a))
         .slice(0, 12);
 
+    if (monthKeys.length === 0) {
+        previousMonthsElement.innerHTML =
+            `<p class="empty">No previous month data.</p>`;
+        return;
+    }
 
     function getMonthDisplay(monthKey) {
+        const [year, month] = monthKey.split("-");
 
-        const [year, month] =
-            monthKey.split("-");
-
-        const date = new Date(
+        return new Date(
             Number(year),
             Number(month) - 1,
             1
-        );
-
-        return date.toLocaleString("en-IN", {
+        ).toLocaleString("en-IN", {
             month: "long",
             year: "numeric"
         });
     }
 
-
     function getCategoryHTML(monthKey) {
-
-        const categoryData =
-            months[monthKey].categories;
+        const categoryData = months[monthKey].categories;
 
         return CATEGORIES
-            .filter(category =>
-                (categoryData[category] || 0) > 0
-            )
+            .filter(category => (categoryData[category] || 0) > 0)
             .map(category => `
                 <div class="previous-month-category">
                     <span>${category}</span>
@@ -577,22 +712,38 @@ async function loadPreviousMonths(user) {
             .join("");
     }
 
+    function getSavingsHTML(monthKey) {
+        const month = months[monthKey];
+
+        if (month.budget === null) {
+            return `
+                <div class="previous-month-savings">
+                    Savings: Budget not set
+                </div>
+            `;
+        }
+
+        const savings = month.budget - month.total;
+
+        return `
+            <div class="previous-month-savings">
+                <span>Savings:</span>
+                <strong>${formatRupees(savings)}</strong>
+            </div>
+        `;
+    }
 
     previousMonthsElement.innerHTML = `
-
         <select
             id="previousMonthSelect"
             class="previous-month-select"
         >
-
             ${monthKeys.map(monthKey => `
                 <option value="${monthKey}">
                     ${getMonthDisplay(monthKey)}
                 </option>
             `).join("")}
-
         </select>
-
 
         <div
             id="previousMonthAmount"
@@ -601,6 +752,9 @@ async function loadPreviousMonths(user) {
             ₹${months[monthKeys[0]].total.toFixed(2)}
         </div>
 
+        <div id="previousMonthSavings">
+            ${getSavingsHTML(monthKeys[0])}
+        </div>
 
         <div
             id="previousMonthCategories"
@@ -608,46 +762,35 @@ async function loadPreviousMonths(user) {
         >
             ${getCategoryHTML(monthKeys[0])}
         </div>
-
     `;
 
-
     const select =
-        document.getElementById(
-            "previousMonthSelect"
-        );
+        document.getElementById("previousMonthSelect");
 
     const amountElement =
-        document.getElementById(
-            "previousMonthAmount"
-        );
+        document.getElementById("previousMonthAmount");
+
+    const savingsElement =
+        document.getElementById("previousMonthSavings");
 
     const categoriesElement =
-        document.getElementById(
-            "previousMonthCategories"
-        );
+        document.getElementById("previousMonthCategories");
 
+    select.addEventListener("change", function () {
+        const selectedMonth = select.value;
 
-    select.addEventListener(
-        "change",
-        function () {
+        amountElement.textContent =
+            `₹${months[selectedMonth].total.toFixed(2)}`;
 
-            const selectedMonth =
-                select.value;
+        savingsElement.innerHTML =
+            getSavingsHTML(selectedMonth);
 
-            amountElement.textContent =
-                `₹${months[selectedMonth].total.toFixed(2)}`;
-
-            categoriesElement.innerHTML =
-                getCategoryHTML(selectedMonth);
-
-        }
-    );
-
+        categoriesElement.innerHTML =
+            getCategoryHTML(selectedMonth);
+    });
 }
 
-// Saved 12 months data
-
+//only saved 12 months data
 async function cleanupOldExpenses(user) {
 
     if (!user) {
@@ -815,6 +958,9 @@ async function loadExpenses(user) {
     loadPreviousMonths(user);
 
     cleanupOldExpenses(user);
+
+    await loadMonthlyBudget(user);
+    updateBudgetDisplay();
 
 
     // -----------------------------
@@ -1497,6 +1643,12 @@ toggleTotalBtn.addEventListener(
     }
 );
 
+if (saveBudgetBtn) {
+    saveBudgetBtn.addEventListener(
+        "click",
+        saveMonthlyBudget
+    );
+}
 
 // -----------------------------
 // LOGIN / LOGOUT / ADD EVENTS
