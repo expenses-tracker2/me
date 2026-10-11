@@ -831,6 +831,17 @@ async function cleanupOldExpenses(user) {
     if (error) {
         console.log("Cleanup error:", error.message);
     }
+
+    // Delete budgets older than 12 months
+    const { error: budgetError } = await db
+    .from("monthly_budgets")
+    .delete()
+    .eq("user_id", user.id)
+    .lt("month_key", cutoffKey);
+
+    if (budgetError) {
+    console.log("Budget cleanup error:", budgetError.message);
+    }
 }
 
 
