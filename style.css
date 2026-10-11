@@ -388,3 +388,82 @@ button.secondary {
     font-size: 10px;
     font-weight: 500;
 }
+
+/* -----------------------------
+MINIMAL LOGIN PAGE
+----------------------------- */
+
+#loginScreen {
+max-width: 400px;
+margin: 45px auto 20px;
+padding: 32px 26px;
+background: #fff;
+border: 1px solid #e5e7eb;
+border-radius: 12px;
+box-shadow: none;
+text-align: center;
+}
+
+#loginScreen h1 {
+font-size: 27px;
+line-height: 1.4;
+margin: 12px 0 8px;
+}
+
+#loginScreen .muted {
+margin-bottom: 28px;
+color: #737373;
+}
+
+#loginScreen input {
+width: 100%;
+min-height: 48px;
+margin-bottom: 12px;
+border: 1px solid #dbdbdb;
+border-radius: 5px;
+background: #fafafa;
+font-size: 14px;
+}
+
+#loginScreen input:focus {
+outline: none;
+border-color: #a8a8a8;
+background: #fff;
+}
+
+#loginScreen #loginBtn {
+min-height: 44px;
+margin-top: 5px;
+border-radius: 7px;
+background: #4d96ff;
+font-size: 15px;
+font-weight: 700;
+}
+
+#loginScreen #signupBtn {
+width: 100%;
+min-height: 44px;
+margin-top: 18px;
+border: 1px solid #dbe7f8;
+border-radius: 7px;
+background: #fff;
+color: #2878df;
+font-size: 14px;
+font-weight: 700;
+}
+
+#loginScreen #loginBtn:active,
+#loginScreen #signupBtn:active {
+opacity: 0.8;
+}
+
+#loginScreen #loginMessage {
+overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+#loginScreen {
+margin-top: 35px;
+padding: 28px 22px;
+}
+}
