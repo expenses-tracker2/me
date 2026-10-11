@@ -541,3 +541,7 @@ padding: 28px 22px;
     margin: 0;
     
 }
+
+.monthly-budget-card .budget-input-row {
+    margin-top: 25px !important;
+}
