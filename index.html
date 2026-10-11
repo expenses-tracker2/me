@@ -87,11 +87,38 @@
 
 </section>
 
-<!-- MONTHLY BUDGET DISPLAY -->
-<section class="card">
+
+<!-- MONTHLY BUDGET CARD -->
+<section class="card monthly-budget-card">
     <h2>💰 Monthly Budget</h2>
-    <p>Monthly Budget: <strong id="budgetAmount">₹0</strong></p>
-    <p>Remaining Budget: <strong id="budgetRemaining">₹0</strong></p>
+
+    <div class="budget-summary">
+        <p>
+            Your Budget :
+            <strong id="budgetAmount">₹0</strong>
+        </p>
+
+        <p>
+            Remaining :
+            <strong id="budgetRemaining">₹0</strong>
+        </p>
+    </div>
+
+    <div class="budget-input-row">
+        <input
+            type="number"
+            id="monthlyBudgetInput"
+            placeholder="Extra amount (₹)"
+            min="0"
+            step="0.01"
+        >
+
+        <button id="saveBudgetBtn" type="button">
+            Add Budget
+        </button>
+    </div>
+
+    <p id="budgetMessage" class="message"></p>
 </section>
 
         <!-- ADD EXPENSE -->
@@ -253,23 +280,7 @@
 
     </section>
 
-<!-- ADD MORE BUDGET -->
-<section class="card">
-    <h2>➕ Add More Budget</h2>
 
-    <div class="budget-input-row">
-        <input
-            type="number"
-            id="monthlyBudgetInput"
-            placeholder="Extra amount (₹)"
-            min="0"
-            step="0.01"
-        />
-        <button id="saveBudgetBtn">Add Budget</button>
-        
-    </div>
-    <p id="budgetMessage" class="message"></p>
-</section>
 
     <!-- PREVIOUS MONTHS -->
     <section class="card">
