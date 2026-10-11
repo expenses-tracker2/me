@@ -524,6 +524,36 @@ padding: 28px 22px;
     font-weight: normal;
 }
 
+.monthly-budget-card .budget-summary {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.monthly-budget-card .budget-summary p {
+    margin: 0;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.monthly-budget-card .budget-summary p:last-child {
+    text-align: right;
+}
+
+.monthly-budget-card .budget-summary strong {
+    font-size: 14px;
+}
+
+@media (max-width: 380px) {
+    .monthly-budget-card .budget-summary p,
+    .monthly-budget-card .budget-summary strong {
+        font-size: 12px;
+    }
+}
+
 .previous-month-savings strong {
     font-size: 12px;
     font-weight: normal;
