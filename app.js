@@ -724,31 +724,31 @@ async function loadPreviousMonths(user) {
     }
 
     function getSavingsHTML(monthKey) {
-      const month = months[monthKey];
+    const month = months[monthKey];
 
-      if (month.budget === null) {
-        return 
+    if (month.budget === null) {
+        return `
             <div class="previous-month-savings">
                 Savings: Budget not set
             </div>
-        ;
-      }
+        `;
+    }
 
-      const savings = month.budget - month.total;
+    const savings = month.budget - month.total;
 
-      const savingsColor = savings < 0
-        ? "#E58B8B"
+    const savingsColor = savings < 0
+        ? "#D96B6B"
         : "#16A34A";
 
-      return 
+    return `
         <div class="previous-month-savings">
             <span>Savings:</span>
             <strong style="color: ${savingsColor};">
                 ${formatRupees(savings)}
             </strong>
         </div>
-      ;
-    }
+    `;
+}
 
     previousMonthsElement.innerHTML = `
         <select
