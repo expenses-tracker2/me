@@ -724,24 +724,30 @@ async function loadPreviousMonths(user) {
     }
 
     function getSavingsHTML(monthKey) {
-        const month = months[monthKey];
+      const month = months[monthKey];
 
-        if (month.budget === null) {
-            return `
-                <div class="previous-month-savings">
-                    Savings: Budget not set
-                </div>
-            `;
-        }
-
-        const savings = month.budget - month.total;
-
-        return `
+      if (month.budget === null) {
+        return 
             <div class="previous-month-savings">
-                <span>Savings:</span>
-                <strong>${formatRupees(savings)}</strong>
+                Savings: Budget not set
             </div>
-        `;
+        ;
+      }
+
+      const savings = month.budget - month.total;
+
+      const savingsColor = savings < 0
+        ? "#E58B8B"
+        : "#16A34A";
+
+      return 
+        <div class="previous-month-savings">
+            <span>Savings:</span>
+            <strong style="color: ${savingsColor};">
+                ${formatRupees(savings)}
+            </strong>
+        </div>
+      ;
     }
 
     previousMonthsElement.innerHTML = `
